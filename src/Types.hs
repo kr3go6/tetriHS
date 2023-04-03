@@ -2,9 +2,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Types
-    ( Xcoord
-    , Ycoord
-    , RotateDegree
+    ( Xcoord (..)
+    , Ycoord (..)
+    , RotateDegree (..)
+    , xToInt
+    , yToInt
+    , degToInt
     , Block (..)
     , Field
     , FieldLine
@@ -19,22 +22,27 @@ TYPES
 -}
 ----------------------------------------
 
-type Xcoord = Int
-type Ycoord = Int
-type RotateDegree = Int
+newtype Xcoord = Xcoord Int deriving (Num, Eq, Ord)
+newtype Ycoord = Ycoord Int deriving (Num, Eq, Ord)
+newtype RotateDegree = RotateDegree Int deriving (Num, Eq, Ord, Real, Enum, Integral)
 
--- newtype Xcoord = Xcoord Int deriving (Num)
--- newtype Ycoord = Ycoord Int deriving (Num)
--- newtype RotateDegree = RotateDegree Int deriving (Num)
+xToInt :: Xcoord -> Int
+xToInt (Xcoord x) = x
 
--- instance Show Xcoord where
-  -- show (Xcoord x) = show x
+yToInt :: Ycoord -> Int
+yToInt (Ycoord y) = y
 
--- instance Show Ycoord where
-  -- show (Ycoord y) = show y
+degToInt :: RotateDegree -> Int
+degToInt (RotateDegree alpha) = alpha
 
--- instance Show RotateDegree where
-  -- show (RotateDegree alpha) = show alpha
+instance Show Xcoord where
+  show (Xcoord x) = show x
+
+instance Show Ycoord where
+  show (Ycoord y) = show y
+
+instance Show RotateDegree where
+  show (RotateDegree alpha) = show alpha
 
 -- "Overlay" value is useful when checking if figure movement is possible
 -- "Edge" value is used for buliding field boundaries

@@ -18,20 +18,20 @@ displayField :: State -> Picture
 displayField state@(State {..}) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ makeGrid
 
 displayField_auc :: Field -> Xcoord -> Ycoord -> [Picture]
-displayField_auc fld x y | (x == (fieldWidthBlk - 1)) && 
+displayField_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && 
                             (y == (fieldHeightBlk - 1)) 
                                     = [(Translate (fromIntegral (blockSideSzPx * halfFieldWidthBlk - halfBlkPx))
                                        (fromIntegral (blockSideSzPx * (halfFieldHeightBlk - y) - halfBlkPx))
                                        $ displayBlock ((fld !! y) !! x)
                                        $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
                          | (x >= fieldWidthBlk)
-                                    = displayField_auc fld 0 (y + 1)
+                                    = displayField_auc fld (Xcoord 0) (Ycoord (y + 1))
                          | otherwise
                                     =  [(Translate (fromIntegral (blockSideSzPx * (x - halfFieldWidthBlk) + halfBlkPx))
                                         (fromIntegral (blockSideSzPx * (halfFieldHeightBlk - y) - halfBlkPx))
                                         $ displayBlock ((fld !! y) !! x)
                                         $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
-                                        ++ (displayField_auc fld (x + 1) y)
+                                        ++ (displayField_auc fld (Xcoord (x + 1)) (Ycoord y))
 
 -- handle input
 handleInput :: Event -> State -> State
@@ -56,7 +56,7 @@ main = do
         randFigIdxList = randomRs range gen
         initFig = listOfFigures !! (head randFigIdxList)
         initRandFigIdxList = tail randFigIdxList
-        initState = State emptyField initFig halfFieldWidthBlk 0 0 initRandFigIdxList initialScore initialSpeed initTickCnt
+        initState = State emptyField initFig (Xcoord halfFieldWidthBlk) (Ycoord 0) (RotateDegree 0) initRandFigIdxList initialScore initialSpeed initTickCnt
 
     play 
         displayMode -- open a new window

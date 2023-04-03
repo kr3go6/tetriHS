@@ -52,8 +52,8 @@ isFull ln = (length $ takeWhile (\blk -> blk /= Empty) ln) == length ln
 
 -- return field with figure placed in it
 addFigToField :: Field -> Field -> Xcoord -> Ycoord -> RotateDegree -> Field
-addFigToField fld fig x y alpha = map (\(a, b) -> (map (\(blk1, blk2) -> blk1 `and'` blk2)) (zip a b)) (zip fld ext_fig)
-        where rotatedFig = rotateClockwise fig alpha;
+addFigToField fld fig (Xcoord x) (Ycoord y) (RotateDegree alpha) = map (\(a, b) -> (map (\(blk1, blk2) -> blk1 `and'` blk2)) (zip a b)) (zip fld ext_fig)
+        where rotatedFig = rotateClockwise fig (RotateDegree alpha);
               ext_fig = (replicate y (replicate fieldWidthBlk Empty)) ++
                         (map (\ln -> (replicate x Empty) ++ 
                                      ln ++ 
@@ -101,14 +101,14 @@ rotateClockwiseOnce fig = transpose $ reverse fig
 
 -- rotate by angle
 rotateClockwise :: Field -> RotateDegree -> Field
-rotateClockwise fig 0 = fig
-rotateClockwise fig 360 = fig
-rotateClockwise fig 90 = rotateClockwiseOnce fig
-rotateClockwise fig 180 = rotateClockwiseOnce $ 
-                          rotateClockwiseOnce fig
-rotateClockwise fig 270 = rotateClockwiseOnce $ 
-                          rotateClockwiseOnce $
-                          rotateClockwiseOnce fig
+rotateClockwise fig (RotateDegree 0) = fig
+rotateClockwise fig (RotateDegree 360) = fig
+rotateClockwise fig (RotateDegree 90) = rotateClockwiseOnce fig
+rotateClockwise fig (RotateDegree 180) = rotateClockwiseOnce $ 
+                                         rotateClockwiseOnce fig
+rotateClockwise fig (RotateDegree 270) = rotateClockwiseOnce $ 
+                                         rotateClockwiseOnce $
+                                         rotateClockwiseOnce fig
 
 -- place tetramino to lowest possible position
 -- return state with updated field and new figure
@@ -116,29 +116,29 @@ rotateClockwise fig 270 = rotateClockwiseOnce $
 dropFigure :: State -> State
 dropFigure state@(State {..}) = state { fld = updateField newFld 
                                       , fig = listOfFigures !! (head randFigIdxList `mod` 7)
-                                      , x = 4
-                                      , y = 0
-                                      , alpha = 0
+                                      , x = (Xcoord 4)
+                                      , y = (Ycoord 0)
+                                      , alpha = (RotateDegree 0)
                                       , randFigIdxList = tail randFigIdxList
                                       } 
         where figField = figureToField fig;
               rotatedFigure = rotateClockwise figField alpha;
               maxDiff = (length $ takeWhile (/= Overlay) 
-                    (map (\yDiff -> checkCorrectMove_auc (addFigToField fld figField x (y + yDiff)
-                    alpha) 0 0) [0,1..(fieldHeightBlk - y)])) - 1;
-              newFld = addFigToField fld (figureToField fig) x (y + maxDiff) alpha
+                    (map (\yDiff -> checkCorrectMove_auc (addFigToField fld figField x (y + (Ycoord yDiff))
+                    alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
+              newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha
 
 checkCorrectMove_auc :: Field -> Xcoord -> Ycoord -> Block
-checkCorrectMove_auc fld x y | (x == (fieldWidthBlk - 1)) && (y == (fieldHeightBlk - 1)) = ((fld !! y) !! x)
-                             | (x >= fieldWidthBlk)                                      = checkCorrectMove_auc fld 0 (y + 1)
+checkCorrectMove_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && (y == (fieldHeightBlk - 1)) = ((fld !! y) !! x)
+                             | (x >= fieldWidthBlk)                                      = checkCorrectMove_auc fld (Xcoord 0) (Ycoord (y + 1))
                              | ((fld !! y) !! x) == Overlay                              = Overlay
-                             | otherwise                                                 = checkCorrectMove_auc fld (x + 1) y
+                             | otherwise                                                 = checkCorrectMove_auc fld (Xcoord (x + 1)) (Ycoord y)
 
 -- check if tetramino position is possible (no overlays on field)
 -- if not possible, return previous state
 -- if possible, return updated state
 checkCorrectMove :: State -> Xcoord -> Ycoord -> RotateDegree -> State
-checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + figWidth > fieldWidthBlk) || 
+checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord figWidth) > (Xcoord fieldWidthBlk)) || 
                                                 (x + xDiff < 0) ||
                                                 (y + yDiff < 0)     
                                                     = state
@@ -146,7 +146,7 @@ checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + figWidt
                                                     = state { fld = updateField $ 
                                                                     addFigToField fld figField x y alpha
                                                             , fig = listOfFigures !! (head randFigIdxList `mod` 7)
-                                                            , x = halfFieldWidthBlk
+                                                            , x = (Xcoord halfFieldWidthBlk)
                                                             , y = 0
                                                             , alpha = 0
                                                             , randFigIdxList = tail randFigIdxList

@@ -6,7 +6,7 @@ module ConstValues
     , fieldWidthBlk
     , blockSideSzPx
     , fieldHeightPx
-    , fieldHeightPx
+    , fieldWidthPx
     , halfBlkPx
     , halfFieldWidthBlk
     , halfFieldHeightBlk
