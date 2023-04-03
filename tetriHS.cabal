@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      ConstValues
+      GameLogic
+      Types
   other-modules:
       Paths_tetriHS
   hs-source-dirs:
