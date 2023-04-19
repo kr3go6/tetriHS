@@ -12,6 +12,33 @@ import Types
 import ConstValues
 import GameLogic
 
+-- display one figure out of field
+displayFigure :: Field -> Xcoord -> Ycoord -> [Picture]
+displayFigure fld (Xcoord x) (Ycoord y) | (x == (fwb - 1)) && 
+                            (y == (fhb - 1)) 
+                                    = [(Translate (fromIntegral (round ((fromIntegral blockSideSzPx) * half_fwb - (fromIntegral halfBlkPx))))
+                                       (fromIntegral (round (fromIntegral blockSideSzPx * (half_fhb - fromIntegral y) - fromIntegral halfBlkPx)))
+                                       $ displayBlock ((fld !! y) !! x)
+                                       $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
+                         | (x >= fwb)
+                                    = displayFigure fld (Xcoord 0) (Ycoord (y + 1))
+                         | otherwise
+                                    =  [(Translate (fromIntegral (round (fromIntegral blockSideSzPx * (fromIntegral x - half_fwb) + fromIntegral halfBlkPx)))
+                                        (fromIntegral (round (fromIntegral blockSideSzPx * (half_fhb - fromIntegral y) - fromIntegral halfBlkPx)))
+                                        $ displayBlock ((fld !! y) !! x)
+                                        $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
+                                        ++ (displayFigure fld (Xcoord (x + 1)) (Ycoord y))
+        where   fwb = length (fld !! 0);
+                fhb = length fld;
+                half_fwb = ((fromIntegral fwb) :: Double) / 2
+                half_fhb = ((fromIntegral fhb) :: Double) / 2
+
+-- display info about next three figures
+nextFiguresInfo :: State -> [Picture]
+nextFiguresInfo state@(State {..}) = [Scale 0.4 0.4 $ Translate 450 950 $ color white $ Text "Next:",
+                Scale 0.6 0.6 $ Translate 200 500 $ Pictures $ displayFigure (figureToField $ listOfFigures !! (head randFigIdxList `mod` 7)) 0 0,
+                Scale 0.6 0.6 $ Translate 400 500 $ Pictures $ displayFigure (figureToField $ listOfFigures !! (head (tail randFigIdxList) `mod` 7)) 0 0,
+                Scale 0.6 0.6 $ Translate 600 500 $ Pictures $ displayFigure (figureToField $ listOfFigures !! (head (tail $ tail randFigIdxList) `mod` 7)) 0 0]
 
 -- display all objects
 displayField :: State -> Picture
@@ -22,7 +49,7 @@ displayField state@(State { appState = StartScreen }) = Pictures [Scale 0.6 0.6 
 displayField state@(State { appState = Finished, .. }) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
                                               makeGrid ++ [Translate 30 0 $ Scale 0.5 0.5 $ color white $ Text $ "Score: " ++ (show score),
                                                            Translate 30 (-80) $ Scale 0.5 0.5 $ color white $ Text "GAME OVER"]
-displayField state@(State {..}) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
+displayField state@(State {..}) = Pictures $ (nextFiguresInfo state) ++ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
                                               makeGrid ++ [Translate 30 0 $ Scale 0.5 0.5 $ color white $ Text $ "Score: " ++ (show score)]
 
 displayField_auc :: Field -> Xcoord -> Ycoord -> [Picture]
