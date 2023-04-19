@@ -61,11 +61,14 @@ addFigToField fld fig (Xcoord x) (Ycoord y) (RotateDegree alpha) = map (\(a, b) 
                         (replicate (fieldHeightBlk - length rotatedFig - y) (replicate fieldWidthBlk Empty))
 
 -- clear all lines that are full
+clearLines :: Field -> Field
+clearLines fld = filter (\ln -> not $ isFull ln) fld
+
+-- restore field after cleaning
 updateField :: Field -> Field
 updateField fld = [(replicate fieldWidthBlk Empty)] ++ 
-            replicate (length fld - length left - 1) emptyLine ++ 
-            (drop 1 left) ++ [(replicate fieldWidthBlk Edge)]
-        where left = filter (\ln -> not $ isFull ln) fld
+            replicate (fieldHeightBlk - length fld - 1) emptyLine ++ 
+            (drop 1 fld) ++ [(replicate fieldWidthBlk Edge)]
 
 -- matrix representation of a figure
 figureToField :: Figure -> Field
@@ -114,19 +117,21 @@ rotateClockwise fig (RotateDegree 270) = rotateClockwiseOnce $
 -- return state with updated field and new figure
 -- (called when KeyUp is pressed)
 dropFigure :: State -> State
-dropFigure state@(State {..}) = state { fld = updateField newFld 
+dropFigure state@(State {..}) = state { fld = updateField cleanedNewFld 
                                       , fig = listOfFigures !! (head randFigIdxList `mod` 7)
                                       , x = (Xcoord 4)
                                       , y = (Ycoord 0)
                                       , alpha = (RotateDegree 0)
                                       , randFigIdxList = tail randFigIdxList
+                                      , score = score + earnedScores (fieldHeightBlk - length cleanedNewFld - 1)
                                       } 
         where figField = figureToField fig;
               rotatedFigure = rotateClockwise figField alpha;
               maxDiff = (length $ takeWhile (/= Overlay) 
                     (map (\yDiff -> checkCorrectMove_auc (addFigToField fld figField x (y + (Ycoord yDiff))
                     alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
-              newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha
+              newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha;
+              cleanedNewFld = clearLines newFld;
 
 checkCorrectMove_auc :: Field -> Xcoord -> Ycoord -> Block
 checkCorrectMove_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && (y == (fieldHeightBlk - 1)) = ((fld !! y) !! x)
@@ -143,13 +148,13 @@ checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord
                                                 (y + yDiff < 0)     
                                                     = state
                                                 | (isCorrect == Overlay && yDiff > 0)
-                                                    = state { fld = updateField $ 
-                                                                    addFigToField fld figField x y alpha
+                                                    = state { fld = updateField cleanedNewFld
                                                             , fig = listOfFigures !! (head randFigIdxList `mod` 7)
                                                             , x = (Xcoord halfFieldWidthBlk)
                                                             , y = 0
                                                             , alpha = 0
                                                             , randFigIdxList = tail randFigIdxList
+                                                            , score = score + earnedScores (fieldHeightBlk - length cleanedNewFld - 1)
                                                             } 
                                                 | (isCorrect /= Overlay)    = state { x = x + xDiff
                                                                                     , y = y + yDiff
@@ -161,3 +166,4 @@ checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord
               figHeight = length figField;
               newFld = addFigToField fld figField (x + xDiff) (y + yDiff) (alpha + alphaDiff);
               isCorrect = checkCorrectMove_auc newFld 0 0;
+              cleanedNewFld = clearLines $ addFigToField fld figField x y alpha;

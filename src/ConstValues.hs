@@ -25,6 +25,7 @@ module ConstValues
     , emptyLine
     , emptyField
     , makeGrid
+    , earnedScores
     ) where
 
 import Types
@@ -83,6 +84,14 @@ listOfFigures = [I, J, L, O, S, T, Z]
 
 range :: (Int, Int)
 range = (0, length listOfFigures - 1)
+
+-- how many points do player get when he removes lines
+earnedScores :: Int -> Int
+earnedScores 1 = 100
+earnedScores 2 = 250
+earnedScores 3 = 450
+earnedScores 4 = 700
+earnedScores _ = 0
 
 -- create empty line
 emptyLine :: FieldLine

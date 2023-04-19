@@ -17,7 +17,8 @@ import GameLogic
 displayField :: State -> Picture
 displayField state@(State { appState = StartScreen }) = Pictures [Scale 0.6 0.6 $ color white $ Text "TetriHS",
               Translate 0 (fromIntegral $ (-2) * blockSideSzPx) $ Scale 0.3 0.3 $ color white $ Text "Press Enter to start"]
-displayField state@(State {..}) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ makeGrid
+displayField state@(State {..}) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
+                                              makeGrid ++ [Translate 30 0 $ Scale 0.5 0.5 $ color white $ Text $ "Score: " ++ (show score)]
 
 displayField_auc :: Field -> Xcoord -> Ycoord -> [Picture]
 displayField_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && 
