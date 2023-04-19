@@ -12,6 +12,7 @@ module Types
     , Field
     , FieldLine
     , Figure (..)
+    , AppState (..)
     , State (..)
     ) where
 
@@ -52,6 +53,9 @@ type Field = [FieldLine]
 
 data Figure = I | J | L | O | S | T | Z deriving (Show)
 
+-- App state in a general sort of way
+data AppState = StartScreen | HighscoreTable | InGame | NameInput | Finished  deriving (Show, Eq)
+
 data State = State { fld :: Field -- consists of blocks that are NOT moving anywhere
                    , fig :: Figure -- type of descending tetramino
                    , x :: Xcoord -- x coordinate of figure
@@ -62,4 +66,5 @@ data State = State { fld :: Field -- consists of blocks that are NOT moving anyw
                    , score :: Int -- current score
                    , speed :: Int -- current fall speed 
                    , tickCount :: Int -- counter of ticks passed since the start
+                   , appState :: AppState
                    } deriving (Show)

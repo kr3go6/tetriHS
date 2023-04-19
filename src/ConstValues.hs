@@ -7,6 +7,10 @@ module ConstValues
     , blockSideSzPx
     , fieldHeightPx
     , fieldWidthPx
+    , appHeightPx
+    , appWidthPx
+    , infoWidthPx
+    , halfInfoWidthPx
     , halfBlkPx
     , halfFieldWidthBlk
     , halfFieldHeightBlk
@@ -44,10 +48,20 @@ blockSideSzPx = 40
 fieldHeightPx = blockSideSzPx * fieldHeightBlk
 fieldWidthPx = blockSideSzPx * fieldWidthBlk
 
+appHeightPx, appWidthPx :: Int
+appHeightPx = fieldHeightPx
+appWidthPx = round $ ((fromIntegral fieldWidthPx) :: Double) * 2
+
+infoWidthPx :: Int
+infoWidthPx = appWidthPx - fieldWidthPx
+
+halfInfoWidthPx :: Int
+halfInfoWidthPx = round $ ((fromIntegral infoWidthPx) :: Double) / 2
+
 halfBlkPx, halfFieldWidthBlk, halfFieldHeightBlk :: Int
-halfBlkPx = round $ (((fromIntegral blockSideSzPx) :: Double) / 2)
-halfFieldWidthBlk = round $ (((fromIntegral fieldWidthBlk) :: Double) / 2)
-halfFieldHeightBlk = round $ (((fromIntegral fieldHeightBlk) :: Double) / 2)
+halfBlkPx = round $ ((fromIntegral blockSideSzPx) :: Double) / 2
+halfFieldWidthBlk = round $ ((fromIntegral fieldWidthBlk) :: Double) / 2
+halfFieldHeightBlk = round $ ((fromIntegral fieldHeightBlk) :: Double) / 2
 
 initialScore, initialSpeed, initTickCnt :: Int
 initialScore = 0
@@ -56,7 +70,7 @@ initTickCnt = 0
 
 -- game display mode
 displayMode :: Display
-displayMode = InWindow "Tetris" (fieldWidthPx, fieldHeightPx) (10, 10) 
+displayMode = InWindow "Tetris" (appWidthPx, appHeightPx) (10, 10) 
 
 stepsPerSecond :: Int
 stepsPerSecond = 1
@@ -82,7 +96,7 @@ emptyField = [replicate fieldWidthBlk Empty] ++
 
 -- list of lines that make grid on field
 makeGrid :: [Picture]
-makeGrid = map (\path -> (Line path)) ((map (\x -> [(x, 11 * fromIntegral(blockSideSzPx)), (x, (-11) * fromIntegral(blockSideSzPx))]) 
+makeGrid = map (\path -> (Translate (-(fromIntegral halfInfoWidthPx)) 0 $ Line path)) ((map (\x -> [(x, 11 * fromIntegral(blockSideSzPx)), (x, (-11) * fromIntegral(blockSideSzPx))]) 
                 [x * fromIntegral(blockSideSzPx) | x <- [(-6),(-5)..6]]) ++
            (map (\y -> [(6 * fromIntegral(blockSideSzPx), y), ((-6) * fromIntegral(blockSideSzPx), y)]) 
                 [y * fromIntegral(blockSideSzPx) | y <- [(-11),(-10)..11]]))
