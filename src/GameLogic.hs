@@ -54,11 +54,16 @@ isFull ln = (length $ takeWhile (\blk -> blk /= Empty) ln) == length ln
 addFigToField :: Field -> Field -> Xcoord -> Ycoord -> RotateDegree -> Field
 addFigToField fld fig (Xcoord x) (Ycoord y) (RotateDegree alpha) = map (\(a, b) -> (map (\(blk1, blk2) -> blk1 `and'` blk2)) (zip a b)) (zip fld ext_fig)
         where rotatedFig = rotateClockwise fig (RotateDegree alpha);
-              ext_fig = (replicate y (replicate fieldWidthBlk Empty)) ++
-                        (map (\ln -> (replicate x Empty) ++ 
-                                     ln ++ 
-                                     (replicate (fieldWidthBlk - length ln - x) Empty)) rotatedFig) ++ 
-                        (replicate (fieldHeightBlk - length rotatedFig - y) (replicate fieldWidthBlk Empty))
+              ext_fig
+                    | y >= 0    = (replicate y (replicate fieldWidthBlk Empty)) ++
+                                (map (\ln -> (replicate x Empty) ++ 
+                                             ln ++ 
+                                             (replicate (fieldWidthBlk - length ln - x) Empty)) rotatedFig) ++ 
+                                (replicate (fieldHeightBlk - length rotatedFig - y) (replicate fieldWidthBlk Empty))
+                    | y < 0     = (map (\ln -> (replicate x Empty) ++ 
+                                             ln ++ 
+                                             (replicate (fieldWidthBlk - length ln - x) Empty)) (reverse $ take (length rotatedFig + y) $ reverse rotatedFig)) ++ 
+                                (replicate (fieldHeightBlk - length rotatedFig - y) (replicate fieldWidthBlk Empty))
 
 -- clear all lines that are full
 clearLines :: Field -> Field
@@ -117,14 +122,14 @@ rotateClockwise fig (RotateDegree 270) = rotateClockwiseOnce $
 -- return state with updated field and new figure
 -- (called when KeyUp is pressed)
 dropFigure :: State -> State
-dropFigure state@(State {..}) = state { fld = updateField cleanedNewFld 
+dropFigure state@(State {..}) = checkCorrectMove state { fld = updateField cleanedNewFld 
                                       , fig = listOfFigures !! (head randFigIdxList `mod` 7)
-                                      , x = (Xcoord 4)
+                                      , x = (Xcoord halfFieldWidthBlk)
                                       , y = (Ycoord 0)
                                       , alpha = (RotateDegree 0)
                                       , randFigIdxList = tail randFigIdxList
                                       , score = score + earnedScores (fieldHeightBlk - length cleanedNewFld - 1)
-                                      } 
+                                      } 0 0 0
         where figField = figureToField fig;
               rotatedFigure = rotateClockwise figField alpha;
               maxDiff = (length $ takeWhile (/= Overlay) 
@@ -144,22 +149,31 @@ checkCorrectMove_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && (
 -- if possible, return updated state
 checkCorrectMove :: State -> Xcoord -> Ycoord -> RotateDegree -> State
 checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord figWidth) > (Xcoord fieldWidthBlk)) || 
-                                                (x + xDiff < 0) ||
-                                                (y + yDiff < 0)     
+                                                (x + xDiff < 0)
                                                     = state
+                                                | isCorrect == Overlay && y + yDiff < 0
+                                                    = checkCorrectMove state { appState = Finished
+                                                                             , y = y - 1
+                                                                             } 0 0 0
+                                                | y + yDiff < 0
+                                                    = state { appState = Finished }
                                                 | (isCorrect == Overlay && yDiff > 0)
-                                                    = state { fld = updateField cleanedNewFld
+                                                    = checkCorrectMove state { fld = updateField cleanedNewFld
                                                             , fig = listOfFigures !! (head randFigIdxList `mod` 7)
                                                             , x = (Xcoord halfFieldWidthBlk)
                                                             , y = 0
                                                             , alpha = 0
                                                             , randFigIdxList = tail randFigIdxList
                                                             , score = score + earnedScores (fieldHeightBlk - length cleanedNewFld - 1)
-                                                            } 
+                                                            } 0 0 0
                                                 | (isCorrect /= Overlay)    = state { x = x + xDiff
                                                                                     , y = y + yDiff
                                                                                     , alpha = (alpha + alphaDiff) `mod` 360
                                                                                     }
+                                                | (isCorrect == Overlay && y + yDiff == 0)
+                                                    = checkCorrectMove state { appState = Finished 
+                                                                             , y = y - 1
+                                                                             } 0 0 0
                                                 | otherwise                 = state
         where figField = figureToField fig;
               figWidth = length (figField !! 0);
