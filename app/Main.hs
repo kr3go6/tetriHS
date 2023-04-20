@@ -49,8 +49,24 @@ displayField state@(State { appState = StartScreen }) = Pictures [Scale 0.6 0.6 
 displayField state@(State { appState = Finished, .. }) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
                                               makeGrid ++ [Translate 30 0 $ Scale 0.5 0.5 $ color white $ Text $ "Score: " ++ (show score),
                                                            Translate 30 (-80) $ Scale 0.5 0.5 $ color white $ Text "GAME OVER"]
-displayField state@(State {..}) = Pictures $ (nextFiguresInfo state) ++ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
+displayField state@(State {..}) = Pictures $ (displayGhost (ghostTetramino state) 0 0) ++ (nextFiguresInfo state) ++ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
                                               makeGrid ++ [Translate 30 0 $ Scale 0.5 0.5 $ color white $ Text $ "Score: " ++ (show score)]
+
+displayGhost :: Field -> Xcoord -> Ycoord -> [Picture]
+displayGhost fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && 
+                            (y == (fieldHeightBlk - 1)) 
+                                    = [(Translate (fromIntegral (blockSideSzPx * halfFieldWidthBlk - halfBlkPx) - (fromIntegral halfInfoWidthPx))
+                                       (fromIntegral (blockSideSzPx * (halfFieldHeightBlk - y) - halfBlkPx))
+                                       $ (displayGhostBlock 0.4 ((fld !! y) !! x))
+                                       $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
+                         | (x >= fieldWidthBlk)
+                                    = displayGhost fld (Xcoord 0) (Ycoord (y + 1))
+                         | otherwise
+                                    =  [(Translate (fromIntegral $ (blockSideSzPx * (x - halfFieldWidthBlk) + halfBlkPx) - (fromIntegral halfInfoWidthPx))
+                                        (fromIntegral (blockSideSzPx * (halfFieldHeightBlk - y) - halfBlkPx))
+                                        $ (displayGhostBlock 0.4 ((fld !! y) !! x))
+                                        $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
+                                        ++ (displayGhost fld (Xcoord (x + 1)) (Ycoord y))
 
 displayField_auc :: Field -> Xcoord -> Ycoord -> [Picture]
 displayField_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && 

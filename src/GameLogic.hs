@@ -4,6 +4,7 @@
 module GameLogic
     ( and'
     , displayBlock
+    , displayGhostBlock
     , isFull
     , addFigToField
     , updateField
@@ -12,6 +13,7 @@ module GameLogic
     , rotateClockwise
     , dropFigure
     , checkCorrectMove
+    , ghostTetramino
     ) where
 
 import Types
@@ -45,6 +47,18 @@ displayBlock Green = color green
 displayBlock Purple = color violet
 displayBlock Red = color red
 displayBlock Overlay = color white
+
+displayGhostBlock :: Float -> Block -> (Picture -> Picture)
+displayGhostBlock alpha Edge = color $ (withAlpha alpha $ greyN 0.5)
+displayGhostBlock alpha Empty = color backgroundColor
+displayGhostBlock alpha Cyan = color (withAlpha alpha cyan)
+displayGhostBlock alpha Blue = color (withAlpha alpha blue)
+displayGhostBlock alpha Orange = color (withAlpha alpha orange)
+displayGhostBlock alpha Yellow = color (withAlpha alpha yellow)
+displayGhostBlock alpha Green = color (withAlpha alpha green)
+displayGhostBlock alpha Purple = color (withAlpha alpha violet)
+displayGhostBlock alpha Red = color (withAlpha alpha red)
+displayGhostBlock alpha Overlay = color (withAlpha alpha white)
 
 -- check if line should be cleared
 isFull :: FieldLine -> Bool
@@ -137,6 +151,16 @@ dropFigure state@(State {..}) = checkCorrectMove state { fld = updateField clean
                     alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
               newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha;
               cleanedNewFld = clearLines newFld;
+
+
+ghostTetramino :: State -> Field
+ghostTetramino state@(State {..}) = newFld
+        where figField = figureToField fig;
+              rotatedFigure = rotateClockwise figField alpha;
+              maxDiff = (length $ takeWhile (/= Overlay) 
+                    (map (\yDiff -> checkCorrectMove_auc (addFigToField fld figField x (y + (Ycoord yDiff))
+                    alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
+              newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha;
 
 checkCorrectMove_auc :: Field -> Xcoord -> Ycoord -> Block
 checkCorrectMove_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && (y == (fieldHeightBlk - 1)) = ((fld !! y) !! x)
