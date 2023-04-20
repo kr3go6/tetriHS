@@ -194,7 +194,7 @@ checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord
                                                                                     , y = y + yDiff
                                                                                     , alpha = (alpha + alphaDiff) `mod` 360
                                                                                     }
-                                                | (isCorrect == Overlay && y + yDiff == 0)
+                                                | (isCorrect == Overlay && y + yDiff == 0 && xDiff == 0)
                                                     = checkCorrectMove state { appState = Finished 
                                                                              , y = y - 1
                                                                              } 0 0 0
