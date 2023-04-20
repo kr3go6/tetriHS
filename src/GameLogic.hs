@@ -38,6 +38,7 @@ and' _ _ = Overlay
 
 displayBlock :: Block -> (Picture -> Picture)
 displayBlock Edge = color $ greyN 0.5
+displayBlock InvisibleEdge = color backgroundColor
 displayBlock Empty = color backgroundColor
 displayBlock Cyan = color cyan
 displayBlock Blue = color blue
@@ -50,6 +51,7 @@ displayBlock Overlay = color white
 
 displayGhostBlock :: Float -> Block -> (Picture -> Picture)
 displayGhostBlock alpha Edge = color $ (withAlpha alpha $ greyN 0.5)
+displayGhostBlock alpha InvisibleEdge = color backgroundColor
 displayGhostBlock alpha Empty = color backgroundColor
 displayGhostBlock alpha Cyan = color (withAlpha alpha cyan)
 displayGhostBlock alpha Blue = color (withAlpha alpha blue)
@@ -85,7 +87,7 @@ clearLines fld = filter (\ln -> not $ isFull ln) fld
 
 -- restore field after cleaning
 updateField :: Field -> Field
-updateField fld = [(replicate fieldWidthBlk Empty)] ++ 
+updateField fld = [[InvisibleEdge] ++ (replicate (fieldWidthBlk - 2) Empty) ++ [InvisibleEdge]] ++ 
             replicate (fieldHeightBlk - length fld - 1) emptyLine ++ 
             (drop 1 fld) ++ [(replicate fieldWidthBlk Edge)]
 

@@ -99,7 +99,7 @@ emptyLine = [Edge] ++ (replicate (fieldWidthBlk - 2) Empty) ++ [Edge]
 
 -- create initial field
 emptyField :: Field
-emptyField = [replicate fieldWidthBlk Empty] ++ 
+emptyField = [[InvisibleEdge] ++ (replicate (fieldWidthBlk - 2) Empty) ++ [InvisibleEdge]] ++ 
              (replicate (fieldHeightBlk - 2) emptyLine) ++ 
              [(replicate fieldWidthBlk Edge)]
 
