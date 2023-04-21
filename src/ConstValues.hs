@@ -26,6 +26,7 @@ module ConstValues
     , emptyField
     , makeGrid
     , earnedScores
+    , scoreToSpeed
     ) where
 
 import Types
@@ -92,6 +93,16 @@ earnedScores 2 = 250
 earnedScores 3 = 450
 earnedScores 4 = 700
 earnedScores _ = 0
+
+scoreToSpeed :: Int -> Int
+scoreToSpeed x  | x < 2000   = 30
+                | x < 3000   = 20
+                | x < 4000   = 15
+                | x < 5000   = 10
+                | x < 8000   = 5
+                | x < 12000  = 3
+                | x < 15000  = 2
+                | otherwise  = 1
 
 -- create empty line
 emptyLine :: FieldLine

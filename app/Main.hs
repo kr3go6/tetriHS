@@ -101,12 +101,16 @@ update _ state@(State { appState = StartScreen }) = state
 update _ state@(State { appState = Finished }) = state
 update _ state@(State {..}) | waitTicks == 1   = checkCorrectMove state { tickCount = tickCount + 1
                                                                         , waitTicks = waitTicks - 1
+                                                                        , speed = scoreToSpeed score
                                                                         } 0 0 0
                             | waitTicks > 0    = state { tickCount = tickCount + 1
                                                        , waitTicks = waitTicks - 1
+                                                       , speed = scoreToSpeed score
                                                        }
                             | (tickCount `mod` speed) == 0       = checkCorrectMove state { tickCount = tickCount + 1 } 0 1 0
-                            | otherwise                          = state { tickCount = tickCount + 1 }
+                            | otherwise                          = state { tickCount = tickCount + 1
+                                                                         , speed = scoreToSpeed score 
+                                                                         }
 
 
 main :: IO ()
