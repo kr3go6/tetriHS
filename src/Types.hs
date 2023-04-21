@@ -51,7 +51,7 @@ data Block = Empty | InvisibleEdge | Edge | Cyan | Blue | Orange | Yellow | Gree
 type FieldLine = [Block]
 type Field = [FieldLine]
 
-data Figure = I | J | L | O | S | T | Z deriving (Show)
+data Figure = I | J | L | O | S | T | Z | None deriving (Show, Eq)
 
 -- App state in a general sort of way
 data AppState = StartScreen | HighscoreTable | InGame | NameInput | Finished  deriving (Show, Eq)
@@ -67,4 +67,5 @@ data State = State { fld :: Field -- consists of blocks that are NOT moving anyw
                    , speed :: Int -- current fall speed 
                    , tickCount :: Int -- counter of ticks passed since the start
                    , appState :: AppState
+                   , waitTicks :: Int
                    } deriving (Show)

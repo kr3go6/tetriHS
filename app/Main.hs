@@ -99,8 +99,14 @@ handleInput _ state = state -- ignore other events
 update :: Float -> State -> State
 update _ state@(State { appState = StartScreen }) = state
 update _ state@(State { appState = Finished }) = state
-update _ state@(State {..}) = checkCorrectMove state 0 1 0
-
+update _ state@(State {..}) | waitTicks == 1   = checkCorrectMove state { tickCount = tickCount + 1
+                                                                        , waitTicks = waitTicks - 1
+                                                                        } 0 0 0
+                            | waitTicks > 0    = state { tickCount = tickCount + 1
+                                                       , waitTicks = waitTicks - 1
+                                                       }
+                            | (tickCount `mod` speed) == 0       = checkCorrectMove state { tickCount = tickCount + 1 } 0 1 0
+                            | otherwise                          = state { tickCount = tickCount + 1 }
 
 
 main :: IO ()
@@ -111,7 +117,7 @@ main = do
         randFigIdxList = randomRs range gen
         initFig = listOfFigures !! (head randFigIdxList)
         initRandFigIdxList = tail randFigIdxList
-        initState = State emptyField initFig (Xcoord halfFieldWidthBlk) (Ycoord 0) (RotateDegree 0) initRandFigIdxList initialScore initialSpeed initTickCnt StartScreen
+        initState = State emptyField initFig (Xcoord halfFieldWidthBlk) (Ycoord 0) (RotateDegree 0) initRandFigIdxList initialScore initialSpeed initTickCnt StartScreen 0
 
     play 
         displayMode -- open a new window

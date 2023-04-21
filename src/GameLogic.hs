@@ -113,6 +113,7 @@ figureToField S = [[Green, Empty],
 figureToField Z = [[Empty, Red],
                    [Red, Red],
                    [Red, Empty]]
+figureToField None = [[]]
 
 -- transpose matrix
 transpose :: Field -> Field
@@ -138,14 +139,13 @@ rotateClockwise fig (RotateDegree 270) = rotateClockwiseOnce $
 -- return state with updated field and new figure
 -- (called when KeyUp is pressed)
 dropFigure :: State -> State
-dropFigure state@(State {..}) = checkCorrectMove state { fld = updateField cleanedNewFld 
-                                      , fig = listOfFigures !! (head randFigIdxList `mod` 7)
-                                      , x = (Xcoord halfFieldWidthBlk)
-                                      , y = (Ycoord 0)
-                                      , alpha = (RotateDegree 0)
-                                      , randFigIdxList = tail randFigIdxList
-                                      , score = score + earnedScores (fieldHeightBlk - length cleanedNewFld - 1)
-                                      } 0 0 0
+dropFigure state@(State {..}) = state { fld = lightFullLines newFld
+                                                            , fig = None
+                                                            , x = (Xcoord halfFieldWidthBlk)
+                                                            , y = 0
+                                                            , alpha = 0
+                                                            , waitTicks = 1
+                                                            }
         where figField = figureToField fig;
               rotatedFigure = rotateClockwise figField alpha;
               maxDiff = (length $ takeWhile (/= Overlay) 
@@ -164,6 +164,11 @@ ghostTetramino state@(State {..}) = newFld
                     alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
               newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha;
 
+lightFullLines :: Field -> Field
+lightFullLines fld = (take (fieldHeightBlk - 1) 
+                        (map (\x -> (if (isFull x) then ([Edge] ++ (replicate (fieldWidthBlk - 2) Overlay) ++ [Edge]) else x)) fld)) ++
+                    [replicate fieldWidthBlk Edge]
+
 checkCorrectMove_auc :: Field -> Xcoord -> Ycoord -> Block
 checkCorrectMove_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) && (y == (fieldHeightBlk - 1)) = ((fld !! y) !! x)
                              | (x >= fieldWidthBlk)                                      = checkCorrectMove_auc fld (Xcoord 0) (Ycoord (y + 1))
@@ -177,13 +182,7 @@ checkCorrectMove :: State -> Xcoord -> Ycoord -> RotateDegree -> State
 checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord figWidth) > (Xcoord fieldWidthBlk)) || 
                                                 (x + xDiff < 0)
                                                     = state
-                                                | isCorrect == Overlay && y + yDiff < 0
-                                                    = checkCorrectMove state { appState = Finished
-                                                                             , y = y - 1
-                                                                             } 0 0 0
-                                                | y + yDiff < 0
-                                                    = state { appState = Finished }
-                                                | (isCorrect == Overlay && yDiff > 0)
+                                                | fig == None && waitTicks == 0
                                                     = checkCorrectMove state { fld = updateField cleanedNewFld
                                                             , fig = listOfFigures !! (head randFigIdxList `mod` 7)
                                                             , x = (Xcoord halfFieldWidthBlk)
@@ -192,6 +191,22 @@ checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord
                                                             , randFigIdxList = tail randFigIdxList
                                                             , score = score + earnedScores (fieldHeightBlk - length cleanedNewFld - 1)
                                                             } 0 0 0
+                                                | fig == None
+                                                    = state
+                                                | isCorrect == Overlay && y + yDiff < 0
+                                                    = checkCorrectMove state { appState = Finished
+                                                                             , y = y - 1
+                                                                             } 0 0 0
+                                                | y + yDiff < 0
+                                                    = state { appState = Finished }
+                                                | (isCorrect == Overlay && yDiff > 0)
+                                                    = state { fld = lightFullLines $ addFigToField fld figField x y alpha
+                                                            , fig = None
+                                                            , x = (Xcoord halfFieldWidthBlk)
+                                                            , y = 0
+                                                            , alpha = 0
+                                                            , waitTicks = 1
+                                                            }
                                                 | (isCorrect /= Overlay)    = state { x = x + xDiff
                                                                                     , y = y + yDiff
                                                                                     , alpha = (alpha + alphaDiff) `mod` 360

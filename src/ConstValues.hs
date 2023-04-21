@@ -66,7 +66,7 @@ halfFieldHeightBlk = round $ ((fromIntegral fieldHeightBlk) :: Double) / 2
 
 initialScore, initialSpeed, initTickCnt :: Int
 initialScore = 0
-initialSpeed = 1
+initialSpeed = 30
 initTickCnt = 0
 
 -- game display mode
@@ -74,7 +74,7 @@ displayMode :: Display
 displayMode = InWindow "Tetris" (appWidthPx, appHeightPx) (10, 10) 
 
 stepsPerSecond :: Int
-stepsPerSecond = 1
+stepsPerSecond = 30
 
 backgroundColor :: Color
 backgroundColor = makeColorI 30 30 30 0
