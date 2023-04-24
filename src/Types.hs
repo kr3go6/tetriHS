@@ -47,7 +47,18 @@ instance Show RotateDegree where
 
 -- "Overlay" value is useful when checking if figure movement is possible
 -- "Edge" value is used for buliding field boundaries
-data Block = Empty | InvisibleEdge | Edge | Cyan | Blue | Orange | Yellow | Green | Purple | Red | Overlay deriving (Show, Eq)
+data Block =  Empty         | 
+              InvisibleEdge | 
+              Edge          | 
+              Cyan          | 
+              Blue          | 
+              Orange        | 
+              Yellow        | 
+              Green         | 
+              Purple        | 
+              Red           | 
+              Overlay 
+            deriving (Show, Eq)
 type FieldLine = [Block]
 type Field = [FieldLine]
 

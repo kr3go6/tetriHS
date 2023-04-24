@@ -117,10 +117,26 @@ emptyField = [[InvisibleEdge] ++ (replicate (fieldWidthBlk - 2) Empty) ++ [Invis
 
 -- list of lines that make grid on field
 makeGrid :: [Picture]
-makeGrid = map (\path -> (Translate (-(fromIntegral halfInfoWidthPx)) 0 $ Line path)) ((map (\x -> [(x, 11 * fromIntegral(blockSideSzPx)), (x, (-11) * fromIntegral(blockSideSzPx))]) 
-                [x * fromIntegral(blockSideSzPx) | x <- [(-6),(-5)..6]]) ++
-           (map (\y -> [(6 * fromIntegral(blockSideSzPx), y), ((-6) * fromIntegral(blockSideSzPx), y)]) 
-                [y * fromIntegral(blockSideSzPx) | y <- [(-11),(-10)..11]]))
+makeGrid  = map 
+                (\path -> 
+                    (Translate (-(fromIntegral halfInfoWidthPx)) 0 $ Line path)
+                ) 
+                (
+                    (map 
+                        (\x -> 
+                            [(x, 11 * fromIntegral(blockSideSzPx)), 
+                            (x, (-11) * fromIntegral(blockSideSzPx))]
+                        ) 
+                        [x * fromIntegral(blockSideSzPx) | x <- [(-6),(-5)..6]]
+                    ) ++
+                    (map 
+                        (\y -> 
+                            [(6 * fromIntegral(blockSideSzPx), y), 
+                            ((-6) * fromIntegral(blockSideSzPx), y)]
+                        ) 
+                        [y * fromIntegral(blockSideSzPx) | y <- [(-11),(-10)..11]]
+                    )
+                )
 
 -- matrix representation of a figure
 figureToField :: Figure -> Field
