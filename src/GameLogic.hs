@@ -8,7 +8,6 @@ module GameLogic
     , isFull
     , addFigToField
     , updateField
-    , figureToField
     , transpose
     , rotateClockwise
     , dropFigure
@@ -51,8 +50,8 @@ displayBlock Overlay = color white
 
 displayGhostBlock :: Float -> Block -> (Picture -> Picture)
 displayGhostBlock alpha Edge = color $ (withAlpha alpha $ greyN 0.5)
-displayGhostBlock alpha InvisibleEdge = color backgroundColor
-displayGhostBlock alpha Empty = color backgroundColor
+displayGhostBlock _ InvisibleEdge = color backgroundColor
+displayGhostBlock _ Empty = color backgroundColor
 displayGhostBlock alpha Cyan = color (withAlpha alpha cyan)
 displayGhostBlock alpha Blue = color (withAlpha alpha blue)
 displayGhostBlock alpha Orange = color (withAlpha alpha orange)
@@ -76,7 +75,7 @@ addFigToField fld fig (Xcoord x) (Ycoord y) (RotateDegree alpha) = map (\(a, b) 
                                              ln ++ 
                                              (replicate (fieldWidthBlk - length ln - x) Empty)) rotatedFig) ++ 
                                 (replicate (fieldHeightBlk - length rotatedFig - y) (replicate fieldWidthBlk Empty))
-                    | y < 0     = (map (\ln -> (replicate x Empty) ++ 
+                    | otherwise = (map (\ln -> (replicate x Empty) ++ 
                                              ln ++ 
                                              (replicate (fieldWidthBlk - length ln - x) Empty)) (reverse $ take (length rotatedFig + y) $ reverse rotatedFig)) ++ 
                                 (replicate (fieldHeightBlk - length rotatedFig - y) (replicate fieldWidthBlk Empty))
@@ -90,30 +89,6 @@ updateField :: Field -> Field
 updateField fld = [[InvisibleEdge] ++ (replicate (fieldWidthBlk - 2) Empty) ++ [InvisibleEdge]] ++ 
             replicate (fieldHeightBlk - length fld - 1) emptyLine ++ 
             (drop 1 fld) ++ [(replicate fieldWidthBlk Edge)]
-
--- matrix representation of a figure
-figureToField :: Figure -> Field
-figureToField O = [[Yellow, Yellow],
-                   [Yellow, Yellow]]
-figureToField T = [[Empty, Purple, Empty],
-                   [Purple, Purple, Purple]]
-figureToField I = [[Cyan],
-                   [Cyan],
-                   [Cyan],
-                   [Cyan]]
-figureToField J = [[Blue, Blue],
-                   [Blue, Empty],
-                   [Blue, Empty]]
-figureToField L = [[Orange, Orange],
-                   [Empty, Orange],
-                   [Empty, Orange]]
-figureToField S = [[Green, Empty],
-                   [Green, Green],
-                   [Empty, Green]]
-figureToField Z = [[Empty, Red],
-                   [Red, Red],
-                   [Red, Empty]]
-figureToField None = [[]]
 
 -- transpose matrix
 transpose :: Field -> Field
@@ -134,6 +109,7 @@ rotateClockwise fig (RotateDegree 180) = rotateClockwiseOnce $
 rotateClockwise fig (RotateDegree 270) = rotateClockwiseOnce $ 
                                          rotateClockwiseOnce $
                                          rotateClockwiseOnce fig
+rotateClockwise fig _ = fig
 
 -- place tetramino to lowest possible position
 -- return state with updated field and new figure
@@ -147,18 +123,14 @@ dropFigure state@(State {..}) = state { fld = lightFullLines newFld
                                                             , waitTicks = 1
                                                             }
         where figField = figureToField fig;
-              rotatedFigure = rotateClockwise figField alpha;
               maxDiff = (length $ takeWhile (/= Overlay) 
                     (map (\yDiff -> checkCorrectMove_auc (addFigToField fld figField x (y + (Ycoord yDiff))
                     alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
               newFld = addFigToField fld (figureToField fig) x (y + (Ycoord maxDiff)) alpha;
-              cleanedNewFld = clearLines newFld;
-
 
 ghostTetramino :: State -> Field
-ghostTetramino state@(State {..}) = newFld
+ghostTetramino State {..} = newFld
         where figField = figureToField fig;
-              rotatedFigure = rotateClockwise figField alpha;
               maxDiff = (length $ takeWhile (/= Overlay) 
                     (map (\yDiff -> checkCorrectMove_auc (addFigToField fld figField x (y + (Ycoord yDiff))
                     alpha) 0 0) [0,1..(fieldHeightBlk - yToInt y)])) - 1;
@@ -218,7 +190,6 @@ checkCorrectMove state@(State {..}) xDiff yDiff alphaDiff | (x + xDiff + (Xcoord
                                                 | otherwise                 = state
         where figField = figureToField fig;
               figWidth = length (figField !! 0);
-              figHeight = length figField;
               newFld = addFigToField fld figField (x + xDiff) (y + yDiff) (alpha + alphaDiff);
               isCorrect = checkCorrectMove_auc newFld 0 0;
               cleanedNewFld = clearLines $ addFigToField fld figField x y alpha;

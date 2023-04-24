@@ -25,6 +25,7 @@ module ConstValues
     , emptyLine
     , emptyField
     , makeGrid
+    , figureToField
     , earnedScores
     , scoreToSpeed
     ) where
@@ -120,3 +121,27 @@ makeGrid = map (\path -> (Translate (-(fromIntegral halfInfoWidthPx)) 0 $ Line p
                 [x * fromIntegral(blockSideSzPx) | x <- [(-6),(-5)..6]]) ++
            (map (\y -> [(6 * fromIntegral(blockSideSzPx), y), ((-6) * fromIntegral(blockSideSzPx), y)]) 
                 [y * fromIntegral(blockSideSzPx) | y <- [(-11),(-10)..11]]))
+
+-- matrix representation of a figure
+figureToField :: Figure -> Field
+figureToField O = [[Yellow, Yellow],
+                   [Yellow, Yellow]]
+figureToField T = [[Empty, Purple, Empty],
+                   [Purple, Purple, Purple]]
+figureToField I = [[Cyan],
+                   [Cyan],
+                   [Cyan],
+                   [Cyan]]
+figureToField J = [[Blue, Blue],
+                   [Blue, Empty],
+                   [Blue, Empty]]
+figureToField L = [[Orange, Orange],
+                   [Empty, Orange],
+                   [Empty, Orange]]
+figureToField S = [[Green, Empty],
+                   [Green, Green],
+                   [Empty, Green]]
+figureToField Z = [[Empty, Red],
+                   [Red, Red],
+                   [Red, Empty]]
+figureToField None = [[]]

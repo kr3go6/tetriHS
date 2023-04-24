@@ -5,7 +5,6 @@ module Main (main) where
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Interact
-import Graphics.Gloss.Data.Color
 import System.Random
 
 import Types
@@ -16,15 +15,15 @@ import GameLogic
 displayFigure :: Field -> Xcoord -> Ycoord -> [Picture]
 displayFigure fld (Xcoord x) (Ycoord y) | (x == (fwb - 1)) && 
                             (y == (fhb - 1)) 
-                                    = [(Translate (fromIntegral (round ((fromIntegral blockSideSzPx) * half_fwb - (fromIntegral halfBlkPx))))
-                                       (fromIntegral (round (fromIntegral blockSideSzPx * (half_fhb - fromIntegral y) - fromIntegral halfBlkPx)))
+                                    = [(Translate (fromIntegral ((round ((fromIntegral blockSideSzPx) * half_fwb - (fromIntegral halfBlkPx))) :: Int))
+                                       (fromIntegral ((round (fromIntegral blockSideSzPx * (half_fhb - fromIntegral y) - fromIntegral halfBlkPx)) :: Int))
                                        $ displayBlock ((fld !! y) !! x)
                                        $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
                          | (x >= fwb)
                                     = displayFigure fld (Xcoord 0) (Ycoord (y + 1))
                          | otherwise
-                                    =  [(Translate (fromIntegral (round (fromIntegral blockSideSzPx * (fromIntegral x - half_fwb) + fromIntegral halfBlkPx)))
-                                        (fromIntegral (round (fromIntegral blockSideSzPx * (half_fhb - fromIntegral y) - fromIntegral halfBlkPx)))
+                                    =  [(Translate (fromIntegral ((round (fromIntegral blockSideSzPx * (fromIntegral x - half_fwb) + fromIntegral halfBlkPx)) :: Int))
+                                        (fromIntegral ((round (fromIntegral blockSideSzPx * (half_fhb - fromIntegral y) - fromIntegral halfBlkPx)) :: Int))
                                         $ displayBlock ((fld !! y) !! x)
                                         $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
                                         ++ (displayFigure fld (Xcoord (x + 1)) (Ycoord y))
@@ -35,16 +34,16 @@ displayFigure fld (Xcoord x) (Ycoord y) | (x == (fwb - 1)) &&
 
 -- display info about next three figures
 nextFiguresInfo :: State -> [Picture]
-nextFiguresInfo state@(State {..}) = [Scale 0.4 0.4 $ Translate 450 950 $ color white $ Text "Next:",
+nextFiguresInfo State {..} = [Scale 0.4 0.4 $ Translate 450 950 $ color white $ Text "Next:",
                 Scale 0.6 0.6 $ Translate 200 500 $ Pictures $ displayFigure (figureToField $ listOfFigures !! (head randFigIdxList `mod` 7)) 0 0,
                 Scale 0.6 0.6 $ Translate 400 500 $ Pictures $ displayFigure (figureToField $ listOfFigures !! (head (tail randFigIdxList) `mod` 7)) 0 0,
                 Scale 0.6 0.6 $ Translate 600 500 $ Pictures $ displayFigure (figureToField $ listOfFigures !! (head (tail $ tail randFigIdxList) `mod` 7)) 0 0]
 
 -- display all objects
 displayField :: State -> Picture
-displayField state@(State { appState = StartScreen }) = Pictures [Scale 0.6 0.6 $ color white $ Text "TetriHS",
+displayField State { appState = StartScreen } = Pictures [Scale 0.6 0.6 $ color white $ Text "TetriHS",
               Translate 0 (fromIntegral $ (-2) * blockSideSzPx) $ Scale 0.3 0.3 $ color white $ Text "Press Enter to start"]
-displayField state@(State { appState = Finished, .. }) = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
+displayField State { appState = Finished, .. } = Pictures $ (displayField_auc (addFigToField fld (figureToField fig) x y alpha) 0 0) ++ 
                                               makeGrid ++ [Translate 30 0 $ Scale 0.5 0.5 $ color white $ Text $ "Score: " ++ (show score),
                                                            Translate 30 (-80) $ Scale 0.5 0.5 $ color white $ Text "GAME OVER",
                                                            Translate 30 (-160) $ Scale 0.25 0.25 $ color white $ Text "Press Enter to restart",
@@ -62,7 +61,7 @@ displayGhost fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) &&
                          | (x >= fieldWidthBlk)
                                     = displayGhost fld (Xcoord 0) (Ycoord (y + 1))
                          | otherwise
-                                    =  [(Translate (fromIntegral $ (blockSideSzPx * (x - halfFieldWidthBlk) + halfBlkPx) - (fromIntegral halfInfoWidthPx))
+                                    =  [(Translate (fromIntegral $ (blockSideSzPx * (x - halfFieldWidthBlk) + halfBlkPx) - halfInfoWidthPx)
                                         (fromIntegral (blockSideSzPx * (halfFieldHeightBlk - y) - halfBlkPx))
                                         $ (displayGhostBlock 0.4 ((fld !! y) !! x))
                                         $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
@@ -78,7 +77,7 @@ displayField_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) &&
                          | (x >= fieldWidthBlk)
                                     = displayField_auc fld (Xcoord 0) (Ycoord (y + 1))
                          | otherwise
-                                    =  [(Translate (fromIntegral $ (blockSideSzPx * (x - halfFieldWidthBlk) + halfBlkPx) - (fromIntegral halfInfoWidthPx))
+                                    =  [(Translate (fromIntegral $ (blockSideSzPx * (x - halfFieldWidthBlk) + halfBlkPx) - halfInfoWidthPx)
                                         (fromIntegral (blockSideSzPx * (halfFieldHeightBlk - y) - halfBlkPx))
                                         $ displayBlock ((fld !! y) !! x)
                                         $ rectangleSolid (fromIntegral blockSideSzPx) (fromIntegral blockSideSzPx))]
@@ -87,7 +86,7 @@ displayField_auc fld (Xcoord x) (Ycoord y) | (x == (fieldWidthBlk - 1)) &&
 -- handle input
 handleInput :: Event -> State -> State
 handleInput (EventKey (SpecialKey key) Down _ _) state@(State { appState = StartScreen }) | (key == KeyEnter) = state { appState = InGame }
-handleInput (EventKey (SpecialKey key) Down _ _) state@(State { appState = Finished, .. })  | (key == KeyEnter) = initState
+handleInput (EventKey (SpecialKey key) Down _ _) State { appState = Finished, .. }  | (key == KeyEnter) = initState
         where
             randFigIdxList_new = drop 5 randFigIdxList;
             initFig = listOfFigures !! (head randFigIdxList_new);
@@ -102,7 +101,7 @@ handleInput _ state = state -- ignore other events
 
 -- simulation step
 update :: Float -> State -> State
-update _ state@(State { appState = StartScreen }) = state
+update _ state@(State { appState = StartScreen }) = state 
 update _ state@(State { appState = Finished }) = state
 update _ state@(State {..}) | waitTicks == 1   = checkCorrectMove state { tickCount = tickCount + 1
                                                                         , waitTicks = waitTicks - 1
